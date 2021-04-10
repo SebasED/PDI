@@ -32,8 +32,8 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load("assets/player.png").convert()
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
-        self.rect.x = WIDTH // 2
-        self.rect.y = HEIGHT - 10
+        self.rect.centerx = WIDTH // 2
+        self.rect.bottom = HEIGHT - 10
 
 
 class Meteor(pygame.sprite.Sprite):
@@ -72,8 +72,9 @@ def dibujar(mask, color):
             x = int(M["m10"]/M["m00"])
             # Se identifica el punto y del centro del área
             y = int(M["m01"]/M["m00"])
-            player.rect.x = x
-            player.rect.y = y
+            
+            player.rect.centerx = x
+            player.rect.centery = y
             # Mejora el contorno, lo suabisa eliminando los picos
             nuevoContorno = cv2.convexHull(c)
             # Se difuba un circulo en el frame con los puntos del centro del área
@@ -88,8 +89,12 @@ def dibujar(mask, color):
 # -----------------------------------------------------------------------------------------------------------
 
 
-WIDTH = 800  # Dimensiones de campo de juego
-HEIGHT = 600  # Dimensiones de campo de juego
+
+cap = cv2.VideoCapture(0)  # Captura la imagen de nuestra camara, streaming
+WIDTH = 640 # Dimensiones de campo de juego
+HEIGHT = 480 # Dimensiones de campo de juego
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
 BLACK = (0, 0, 0)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
@@ -98,7 +103,7 @@ all_sprites = pygame.sprite.Group()
 meteor_list = pygame.sprite.Group()
 player = Player()
 score = 0
-cap = cv2.VideoCapture(0)  # Captura la imagen de nuestra camara, streaming
+
 # Rango bajo del color que se desea capturar
 azulBajo = np.array([100, 100, 20], np.uint8)
 # Rango alto del color que se desea capturar
@@ -130,7 +135,7 @@ while running:
         mask = cv2.inRange(frameHSV, azulBajo, azulAlto)
         # Se llama a la función para mostrar en pantalla
         dibujar(mask, (255, 0, 0))
-        #cv2.imshow('maskAzul', mask)# imagen binarizada
+        # cv2.imshow('maskAzul', mask)# imagen binarizada
         cv2.imshow('frame', frame)  # muestra el frame
         if cv2.waitKey(1) & 0xFF == ord('s'):  # condición para terminar la ejecución
             break
@@ -148,7 +153,7 @@ while running:
     hits = pygame.sprite.spritecollide(player, meteor_list, True)
     for hit in hits:
         score += 1
-        if score == 5:
+        if score == 200:
             running = False
     #Draw / Render
     screen.blit(background, [0, 0])
