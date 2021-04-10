@@ -84,7 +84,7 @@ running = True
 while running:
     check, frame= cap.read()                    #Lee lo que hay en cap, que es la captura del video de la cámara web 
     frame1= cv2.flip(frame,1)                    #Crea un efecto espejo
-    a= frame1[:,:,1]                             #Se extrae la componente azul de la imagen
+    a = frame1[:, :, 1]  # Se extrae la componente azul de la imagen
     a= cv2.subtract(a,cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY )) #Se resta la componente azul con la imagen del frame pero en escala de grises
     
     ret,a= cv2.threshold(a,30,255,cv2.THRESH_BINARY) #Con la función Threshold se binariza para que solo se vean los objetos azules
@@ -92,21 +92,21 @@ while running:
     a=cv2.dilate(a,kernel,iterations=1)           #Se realiza una dilatación para que la imagen se vea mas grande y definida
     a=cv2.Canny(a,100,150)                        #Se obtiene el contorno del objeto azul en pantalla
   
-    borders, cnts= cv2.findContours(a.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) #Se toma la posición del objeto en la pantalla y se guarda en una matriz de matrices.
+    borders, cnts= cv2.findContours(a, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) #Se toma la posición del objeto en la pantalla y se guarda en una matriz de matrices.
     for b in borders:
         area = cv2.contourArea(b)
-        M =cv2.moments(b)
-        if(M["m00"]==0):
-            M["m00"]=1
-        x=int(M["m10"]/M["m00"])
-        y=int(M["m01"]/M["m00"])
-        
-                                
-        cv2.circle(frame1,(x,y),7,(0,255,0),-1)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(frame1,'{},{}'.format(x,y),(x+10,y),font,0.75,(0,255,0),1,cv2.LINE_AA)
-        nuevocontorno=cv2.convexHull(b)
-        cv2.drawContours(frame, [nuevocontorno],0,(255,0,0),3)
+        if area > 2000:
+            M =cv2.moments(b)
+            if(M["m00"]==0):
+                M["m00"]=1
+            x=int(M["m10"]/M["m00"])
+            y=int(M["m01"]/M["m00"])
+
+            cv2.circle(frame1,(x,y),7,(0,255,0),-1)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(frame1,'{},{}'.format(x,y),(x+10,y),font,0.75,(0,255,0),1,cv2.LINE_AA)
+            nuevocontorno=cv2.convexHull(b)
+            cv2.drawContours(frame1, [nuevocontorno], 0, (255, 0, 0), 3)
     cv2.imshow('frame',frame1)
     cv2.imshow('a',a)
     # Keep loop running at the right speed
