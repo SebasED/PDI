@@ -90,11 +90,11 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.y = y0
         self.rect.centerx = x0
-        if yf-y0>0:
-            self.speedy = 10
+        if yf==y0: self.speedy = 0
+        elif yf-y0>0: self.speedy = 10
         else: self.speedy = -10
-        if xf-x0>0:
-            self.speedx = 10
+        if xf==x0: self.speedx = 0
+        elif xf-x0>0: self.speedx = 10
         else: self.speedx = -10
         
     
@@ -121,8 +121,11 @@ def dibujar(mask, color):
             # Se identifica el punto y del centro del área
             y = int(M["m01"]/M["m00"])
             
-            player.rect.centerx = x
-            player.rect.centery = y
+            if color==(255, 0, 0):
+                player.rect.centerx = x
+                player.rect.centery = y
+            else:
+                player.shoot(x,y)
             # Mejora el contorno, lo suabisa eliminando los picos
             nuevoContorno = cv2.convexHull(c)
             # Se difuba un circulo en el frame con los puntos del centro del área
@@ -130,42 +133,14 @@ def dibujar(mask, color):
             font = cv2.FONT_HERSHEY_SIMPLEX  # Se asigna una fuente
             cv2.putText(frame, '{},{}'.format(x, y), (x+10, y), font, 0.75,
                         (0, 255, 0), 1, cv2.LINE_AA)  # Se pone un texto en el frame
-            cv2.drawContours(frame, [nuevoContorno], 0, (255, 0, 0), 3)
-
-def disparar(mask, color):
-    # Se obtienen los contornos de las imagenes que entren en el rango del color definido
-    contornos, _ = cv2.findContours(
-        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # for para eliminar los contornos que hacen ruido y dejar el que necesitamos
-
-    for c in contornos:
-        area = cv2.contourArea(c)  # Encuentra el área del contorno
-        if area > 3000:
-            M = cv2.moments(c)  # función para encontrar el centro del área
-            if (M["m00"] == 0):
-                M["m00"] = 1  # se asigna 1 en caso que sea cero para la división
-            # Se identifica el punto x del centro del área
-            x = int(M["m10"]/M["m00"])
-            # Se identifica el punto y del centro del área
-            y = int(M["m01"]/M["m00"])
-            
-            player.shoot(x,y)
-            # Mejora el contorno, lo suabisa eliminando los picos
-            nuevoContorno = cv2.convexHull(c)
-            # Se difuba un circulo en el frame con los puntos del centro del área
-            cv2.circle(frame, (x, y), 7, (0, 255, 0), -1)
-            font = cv2.FONT_HERSHEY_SIMPLEX  # Se asigna una fuente
-            cv2.putText(frame, '{},{}'.format(x, y), (x+10, y), font, 0.75,
-                        (0, 255, 0), 1, cv2.LINE_AA)  # Se pone un texto en el frame
-            cv2.drawContours(frame, [nuevoContorno], 0, (255, 0, 0), 3)
-
+            cv2.drawContours(frame, [nuevoContorno], 0, color, 3)
 # -----------------------------------------------------------------------------------------------------------
 # 3. INICIALIZAR VARIABLES
 # -----------------------------------------------------------------------------------------------------------
 
 
 
-cap = cv2.VideoCapture(0)  # Captura la imagen de nuestra camara, streaming
+cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)  # Captura la imagen de nuestra camara, streaming
 WIDTH = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) # Dimensiones de campo de juego
 HEIGHT = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) # Dimensiones de campo de juego
 
@@ -201,7 +176,7 @@ player = Player()
 all_sprites.add(player)
 bullets = pygame.sprite.Group()
 
-score = 0
+score = 20
 
 # Rango bajo del color que se desea capturar
 azulBajo = np.array([100, 100, 20], np.uint8)
@@ -241,7 +216,7 @@ while running:
         # Se llama a la función para mostrar en pantalla
         dibujar(mask, (255, 0, 0))
         # cv2.imshow('maskAzul', mask)# imagen binarizada
-        disparar(maskRojo, (0, 0, 255))
+        dibujar(maskRojo, (0, 0, 255))
         cv2.imshow('frame', frame)  # muestra el frame
         if cv2.waitKey(1) & 0xFF == ord('s'):  # condición para terminar la ejecución
             break
@@ -256,16 +231,27 @@ while running:
     # Update
     all_sprites.update()
 
+    
+    hits = pygame.sprite.groupcollide(meteor_list, bullets, True, True)
+    for hit in hits:
+        explosion = Explosion(hit.rect.center)
+        all_sprites.add(explosion)
+        meteor = Meteor()
+        all_sprites.add(meteor)
+        meteor_list.add(meteor)
+
     hits = pygame.sprite.spritecollide(player, meteor_list, True)
     for hit in hits:
-        score += 1
+        score -= 1
         meteor = Meteor()
         all_sprites.add(meteor)
         meteor_list.add(meteor)
         explosion = Explosion(hit.rect.center)
         all_sprites.add(explosion)
-        if score == 200:
+        if score == 0:
             running = False
+
+    
     #Draw / Render
     screen.blit(background, [0, 0])
     all_sprites.draw(screen)
