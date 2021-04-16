@@ -126,7 +126,7 @@ def dibujar(mask, color):
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)# Se obtienen los contornos de las imagenes que entren en el rango del color definido
     for c in contornos:# for para eliminar los contornos que hacen ruido y dejar el que necesitamos
         area = cv2.contourArea(c)  # Encuentra el área del contorno
-        if area > 900:
+        if area > 2000:
             M = cv2.moments(c)  # función para encontrar el centro del área
             if (M["m00"] == 0):M["m00"] = 1  # se asigna 1 en caso que sea cero para la división
             x = int(M["m10"]/M["m00"])# Se identifica el punto x del centro del área
@@ -172,6 +172,7 @@ def show_go_screen():
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)# Captura la imagen de nuestra camara, streaming
 WIDTH = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # Dimensiones de campo de juego
 HEIGHT = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))# Dimensiones de campo de juego
+
 BLACK = (0, 0, 0)  # Definir un color
 pygame.init()  # Iniciar la librería paygame para el juego
 pygame.mixer.init()  # Iniciar la librería paygame para el juego
@@ -194,7 +195,7 @@ for i in range(9):  # Agregar las imagenes que representan las explosiones
     explosion_anim.append(img_scale)
 
 background = pygame.image.load("assets/background.png").convert()# Asignar una imagen al fondo de pantalla
-
+player = Player()
 amarilloBajo = np.array([15, 100, 20], np.uint8)# Rango bajo del color amarillo
 amarilloAlto = np.array([45, 255, 255], np.uint8)# Rango alto del color amarillo
 azulBajo = np.array([100, 100, 20], np.uint8)  # Rango bajo del color azul
