@@ -149,7 +149,7 @@ def show_go_screen():
               HEIGHT / 4)  # Dibuja el nombre del juego
     draw_text(screen, "La nave seguira el movimiento de un objeto azul",
               20, WIDTH // 2, HEIGHT // 2)  # Instrucción del juego
-    draw_text(screen, "Dispara poniendo otro objeto de color rojo en pantalla ",
+    draw_text(screen, "Dispara poniendo otro objeto de color amarillo en pantalla ",
               20, WIDTH // 2, (HEIGHT // 2)+20)  # Instrucción del juego
     draw_text(screen, "Si te impactan 10 meteoritos pierdes el juego  ",
               20, WIDTH // 2, (HEIGHT // 2)+40)  # Instrucción del juego
